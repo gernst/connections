@@ -1,3 +1,7 @@
+// A Processing implementation of Game of Life By Joan Soler-Adillon
+// https://processing.org/examples/gameoflife.html
+// License: GLP 2
+
 // Size of cells
 int cellSize = 3;
 
