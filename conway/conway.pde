@@ -3,13 +3,14 @@
 // License: GLP 2
 
 // Size of cells
-int cellSize = 3;
+int cellSize = 10;
+int columns, rows;
 
 // How likely for a cell to be alive at start (in percentage)
-float probabilityOfAliveAtStart = 50;
+float probabilityOfAliveAtStart = 30;
 
 // Variables for timer
-int interval = 10;
+int interval = 100;
 int lastRecordedTime = 0;
 
 // Colors for active/inactive cells
@@ -17,19 +18,18 @@ color alive = color(0, 200, 0);
 color dead = color(0);
 
 // Array of cells
-int[][] cells; 
-// Buffer to record the state of the cells and use this while changing the others in the interations
-int[][] cellsBuffer; 
+int[][] cells;
 
 // Pause
 boolean pause = false;
 
 void setup() {
   size (800, 600);
-
+  columns = width/cellSize;
+  rows = height/cellSize;
+  
   // Instantiate arrays 
-  cells = new int[width/cellSize][height/cellSize];
-  cellsBuffer = new int[width/cellSize][height/cellSize];
+  cells = new int[columns][rows];
 
   // This stroke will draw the background grid
   stroke(48);
@@ -42,26 +42,24 @@ void setup() {
 
 void init() {
   // Initialization of cells
-  for (int x=0; x<width/cellSize; x++) {
-    for (int y=0; y<height/cellSize; y++) {
+  for (int x=0; x<columns; x++) {
+    for (int y=0; y<rows; y++) {
       float state = random (100);
-      if (state > probabilityOfAliveAtStart) { 
-        state = 0;
+      
+      if (state < probabilityOfAliveAtStart) { 
+        cells[x][y] = 1;
+      } else {
+        cells[x][y] = 0;
       }
-      else {
-        state = 1;
-      }
-      cells[x][y] = int(state); // Save state of each cell
     }
   }
 }
 
 void draw() {
-
   //Draw grid
-  for (int x=0; x<width/cellSize; x++) {
-    for (int y=0; y<height/cellSize; y++) {
-      if (cells[x][y]==1) {
+  for (int x=0; x<columns; x++) {
+    for (int y=0; y<rows; y++) {
+      if (cells[x][y] == 1) {
         fill(alive); // If alive
       }
       else {
@@ -70,6 +68,7 @@ void draw() {
       rect (x*cellSize, y*cellSize, cellSize, cellSize);
     }
   }
+  
   // Iterate if timer ticks
   if (millis()-lastRecordedTime>interval) {
     if (!pause) {
@@ -77,75 +76,80 @@ void draw() {
       lastRecordedTime = millis();
     }
   }
+}
 
-  // Create  new cells manually on pause
-  if (pause && mousePressed) {
-    // Map and avoid out of bound errors
-    int xCellOver = int(map(mouseX, 0, width, 0, width/cellSize));
-    xCellOver = constrain(xCellOver, 0, width/cellSize-1);
-    int yCellOver = int(map(mouseY, 0, height, 0, height/cellSize));
-    yCellOver = constrain(yCellOver, 0, height/cellSize-1);
 
-    // Check against cells in buffer
-    if (cellsBuffer[xCellOver][yCellOver]==1) { // Cell is alive
-      cells[xCellOver][yCellOver]=0; // Kill
-      fill(dead); // Fill with kill color
+void iteration() { // When the clock ticks
+
+  // First part: compute hom many neighbors each cell has
+  int[][] neighbors = new int[columns][rows];
+  
+  for (int x=0; x<columns; x++) {
+    for (int y=0; y<rows; y++) {
+      neighbors[x][y] = 0;
+      
+      // ceck cells above and below
+      if(0 <= y-1)
+        neighbors[x][y] += cells[x][y-1];
+      if(y+1 < rows)
+        neighbors[x][y] += cells[x][y+1];
+      
+      // check cells to left and right
+      if(0 <= x-1)
+        neighbors[x][y] += cells[x-1][y];
+      if(x+1 < columns)
+        neighbors[x][y] += cells[x+1][y];
+      
+      // check diagonal neighbors
+      if(0 <= x-1 && 0 <= y-1)
+        neighbors[x][y] += cells[x-1][y-1];
+      if(x+1 < columns && 0 <= y-1)
+        neighbors[x][y] += cells[x+1][y-1];
+      if(0 <= x-1 && y+1 < rows)
+        neighbors[x][y] += cells[x-1][y+1];
+      if(x+1 < columns && y+1 < rows)
+        neighbors[x][y] += cells[x+1][y+1];
     }
-    else { // Cell is dead
-      cells[xCellOver][yCellOver]=1; // Make alive
-      fill(alive); // Fill alive color
-    }
-  } 
-  else if (pause && !mousePressed) { // And then save to buffer once mouse goes up
-    // Save cells to buffer (so we opeate with one array keeping the other intact)
-    for (int x=0; x<width/cellSize; x++) {
-      for (int y=0; y<height/cellSize; y++) {
-        cellsBuffer[x][y] = cells[x][y];
+  }
+  
+  // Second part: determine for each cell the new status depending on its neighbors
+  for (int x=0; x<columns; x++) {
+    for (int y=0; y<rows; y++) {
+      if(neighbors[x][y] < 2) {
+        cells[x][y] = 0;
+      }
+      
+      if(neighbors[x][y] == 3) {
+        cells[x][y] = 1;
+      }
+      
+      
+      if(neighbors[x][y] > 3) {
+        cells[x][y] = 0;
       }
     }
   }
 }
 
+void mousePressed() {
+  mouseDragged();
+}
 
-
-void iteration() { // When the clock ticks
-  // Save cells to buffer (so we opeate with one array keeping the other intact)
-  for (int x=0; x<width/cellSize; x++) {
-    for (int y=0; y<height/cellSize; y++) {
-      cellsBuffer[x][y] = cells[x][y];
+void mouseDragged() {
+  if(pause) {
+    int x = int(map(mouseX, 0, width, 0, columns));
+    int y = int(map(mouseY, 0, height, 0, rows));
+    
+    if(0 <= x && x < columns && 0 <= y && y < rows) {
+      if(mouseButton == LEFT) {
+        cells[x][y] = 1;
+      }
+      if(mouseButton == RIGHT) {
+        cells[x][y] = 0;
+      }
     }
   }
-
-  // Visit each cell:
-  for (int x=0; x<width/cellSize; x++) {
-    for (int y=0; y<height/cellSize; y++) {
-      // And visit all the neighbours of each cell
-      int neighbours = 0; // We'll count the neighbours
-      for (int xx=x-1; xx<=x+1;xx++) {
-        for (int yy=y-1; yy<=y+1;yy++) {  
-          if (((xx>=0)&&(xx<width/cellSize))&&((yy>=0)&&(yy<height/cellSize))) { // Make sure you are not out of bounds
-            if (!((xx==x)&&(yy==y))) { // Make sure to to check against self
-              if (cellsBuffer[xx][yy]==1){
-                neighbours ++; // Check alive neighbours and count them
-              }
-            } // End of if
-          } // End of if
-        } // End of yy loop
-      } //End of xx loop
-      // We've checked the neigbours: apply rules!
-      if (cellsBuffer[x][y]==1) { // The cell is alive: kill it if necessary
-        if (neighbours < 2 || neighbours > 3) {
-          cells[x][y] = 0; // Die unless it has 2 or 3 neighbours
-        }
-      } 
-      else { // The cell is dead: make it live if necessary      
-        if (neighbours == 3 ) {
-          cells[x][y] = 1; // Only if it has 3 neighbours
-        }
-      } // End of if
-    } // End of y loop
-  } // End of x loop
-} // End of function
+}
 
 void keyPressed() {
   if (key=='r' || key == 'R') {
@@ -156,8 +160,8 @@ void keyPressed() {
     pause = !pause;
   }
   if (key=='c' || key == 'C') { // Clear all
-    for (int x=0; x<width/cellSize; x++) {
-      for (int y=0; y<height/cellSize; y++) {
+    for (int x=0; x<columns; x++) {
+      for (int y=0; y<rows; y++) {
         cells[x][y] = 0; // Save all to zero
       }
     }
