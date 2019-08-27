@@ -2,6 +2,10 @@
 
 // Copyright
 // Gidon Ernst
+
+// Based on:
+// Joan Soler-Adillon (https://processing.org/examples/gameoflife.html)
+
 // License: GLP 2
 
 // Variables for timer
@@ -134,43 +138,6 @@ void iteration() { // When the clock ticks
       }
       
       cells[x][y] = color(_r, _g, _b);
-    }
-  }
-}
-
-void mousePressed() {
-  mouseDragged();
-}
-
-void mouseDragged() {
-  if(pause) {
-    int x = int(map(mouseX, 0, width, 0, columns));
-    int y = int(map(mouseY, 0, height, 0, rows));
-    
-    if(0 <= x && x < columns && 0 <= y && y < rows) {
-      if(mouseButton == LEFT) {
-        cells[x][y] = color(255,255,255);
-      }
-      if(mouseButton == RIGHT) {
-        cells[x][y] = 0;
-      }
-    }
-  }
-}
-
-void keyPressed() {
-  if (key=='r' || key == 'R') {
-    // Restart: reinitialization of cells
-    init();
-  }
-  if (key==' ') { // On/off of pause
-    pause = !pause;
-  }
-  if (key=='c' || key == 'C') { // Clear all
-    for (int x=0; x<columns; x++) {
-      for (int y=0; y<rows; y++) {
-        cells[x][y] = color(0,0,0); // Save all to zero
-      }
     }
   }
 }
