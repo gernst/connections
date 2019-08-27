@@ -19,13 +19,13 @@ color[][] cells;
 boolean pause = false;
 
 int columns, rows;
-int scale = 4;
+int scale = 1;
 PImage image;
-     
-int mode = 0; // or 1 or 2 (but that is *very* flashy)
+
+int mode = 0; // 0,1,2 (2 is *very* flashy)
 
 void settings() {
-  image = loadImage("marienplatz.png");
+  image = loadImage("sainte_victoire_cezanne_1.jpg");
   columns = image.width;
   rows = image.height;
   size (columns*scale, rows*scale);
