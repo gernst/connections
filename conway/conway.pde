@@ -1,14 +1,13 @@
 // A Processing implementation of Game Life 
 
 // Copyright
-// Joan Soler-Adillon
-// Gidon Ernst
+// Joan Soler-Adillon (https://processing.org/examples/gameoflife.html)
+// Gidon Ernst        (code cleanup)
 
-// https://processing.org/examples/gameoflife.html
 // License: GLP 2
 
 // Size of cells
-int cellSize = 10;
+int cellSize = 30;
 int columns, rows;
 
 // How likely for a cell to be alive at start (in percentage)
