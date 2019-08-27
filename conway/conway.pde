@@ -1,4 +1,9 @@
-// A Processing implementation of Game of Life By Joan Soler-Adillon
+// A Processing implementation of Game Life 
+
+// Copyright
+// Joan Soler-Adillon
+// Gidon Ernst
+
 // https://processing.org/examples/gameoflife.html
 // License: GLP 2
 
@@ -15,7 +20,7 @@ int lastRecordedTime = 0;
 
 // Colors for active/inactive cells
 color alive = color(0, 200, 0);
-color dead = color(0);
+color dead = color(0, 0, 0);
 
 // Array of cells
 int[][] cells;
